@@ -1,0 +1,37 @@
+{
+    "name": "tree-monitor",
+    "version": "1.0.0",
+    "description": "Monitora recursivamente um diretório e gera sua estrutura em JSON",
+    "main": "src/index.js",
+    "bin": {
+        "tree-monitor": "./src/index.js"
+    },
+    "scripts": {
+        "start": "node src/index.js",
+        "build": "pkg .",
+        "make-installer": "iscc installer/setup.iss",
+        "dist": "npm run build && npm run make-installer"
+    },
+    "keywords": [
+        "directory",
+        "tree",
+        "monitor",
+        "json"
+    ],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "chokidar": "^3.5.3",
+        "ignore": "^5.2.4",
+        "yargs": "^17.7.2"
+    },
+    "devDependencies": {
+        "pkg": "^5.8.1"
+    },
+    "pkg": {
+        "targets": [
+            "node18-win-x64"
+        ],
+        "outputPath": "dist"
+    }
+}

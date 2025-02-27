@@ -1,0 +1,17 @@
+# Arquivos e pastas do Node.js
+node_modules/
+
+# Arquivos de build
+dist/
+
+# Arquivos do instalador
+installer/
+
+# Arquivos de lock
+package-lock.json
+
+# Arquivos do Git
+.git/
+
+# O próprio arquivo de saída
+tree-output.json 
