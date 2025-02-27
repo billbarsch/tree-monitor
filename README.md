@@ -10,19 +10,27 @@ Um monitor de diretórios que gera uma representação em formato de árvore da 
 - Dois formatos de saída: detalhado (JSON) e simplificado (árvore)
 - Saída fácil com a tecla 'q'
 
+## Download
+
+Baixe a versão mais recente para seu sistema operacional:
+
+- [Windows (64-bit)](https://github.com/billbarsch/tree-monitor/releases/latest/download/tree-monitor-win.exe)
+- [Linux](https://github.com/billbarsch/tree-monitor/releases/latest/download/tree-monitor-linux)
+- [macOS](https://github.com/billbarsch/tree-monitor/releases/latest/download/tree-monitor-macos)
+
 ## Instalação
 
-### Usando o Instalador (Recomendado para Windows)
+### Usando o Executável (Recomendado)
 
-1. Baixe o arquivo `tree-monitor-setup.exe` da seção de releases
-2. Execute o instalador e siga as instruções na tela
-3. O programa será instalado e adicionado ao PATH do sistema automaticamente
+1. Baixe o executável para seu sistema operacional usando os links acima
+2. (Opcional) Adicione o diretório do executável ao PATH do sistema
+3. Execute o programa via linha de comando
 
-### Instalação Manual
+### Instalação Manual (Para Desenvolvedores)
 
 1. Clone o repositório:
 ```bash
-git clone https://seu-repositorio/tree-monitor.git
+git clone https://github.com/billbarsch/tree-monitor.git
 cd tree-monitor
 ```
 
@@ -31,99 +39,124 @@ cd tree-monitor
 npm install
 ```
 
-## Uso
-
-### Como comando global (recomendado)
-
-1. Instale globalmente:
-```bash
-npm install -g .
-```
-
-2. Execute o comando:
-```bash
-tree-monitor --interval 5 --directory "/path/to/directory" --output-file "tree.json"
-```
-
-### Como executável
-
-1. Compile o executável:
+3. Compile o executável:
 ```bash
 npm run build
 ```
 
-2. O executável será gerado na pasta `dist`. Execute-o:
+## Uso
+
 ```bash
-./dist/tree-monitor.exe --interval 5 --directory "/path/to/directory" --output-file "tree.json"
+tree-monitor --interval <segundos> --directory <diretório> --output-file <arquivo-saída> [--detailed]
 ```
 
-### Argumentos
+### Parâmetros
 
 - `--interval, -t`: Intervalo de atualização em segundos
 - `--directory, -d`: Diretório a ser monitorado
-- `--output-file, -o`: Arquivo JSON onde será salva a estrutura
+- `--output-file, -o`: Arquivo de saída
+- `--detailed, -D`: Gera saída detalhada em formato JSON (opcional)
 
-## Arquivo .treeignore
+### Exemplos
 
-Você pode criar um arquivo `.treeignore` no diretório monitorado para ignorar arquivos e pastas específicos. A sintaxe é similar ao `.gitignore`:
-
-```
-node_modules/
-*.log
-.git/
-temp/
+1. Monitoramento básico:
+```bash
+tree-monitor --interval 30 --directory "." --output-file "tree-output.json"
 ```
 
-## Formato do JSON
+2. Monitoramento com saída detalhada:
+```bash
+tree-monitor --interval 30 --directory "." --output-file "tree-output.json" --detailed
+```
 
-O arquivo JSON gerado terá a seguinte estrutura:
+## Formatos de Saída
 
+### Formato Simplificado (padrão)
 ```json
 {
-  "type": "directory",
-  "name": "directory-name",
-  "children": [
-    {
-      "type": "file",
-      "name": "file.txt",
-      "size": 1234,
-      "modified": "2024-01-01T00:00:00.000Z"
-    },
-    {
-      "type": "directory",
-      "name": "subdirectory",
-      "children": [],
-      "modified": "2024-01-01T00:00:00.000Z"
-    }
-  ],
-  "modified": "2024-01-01T00:00:00.000Z"
+  ".gitignore",
+  "LICENSE",
+  "README.md",
+  "package.json",
+  "src": { "index.js" }
 }
 ```
 
-## Criando o Instalador
-
-Para criar o instalador do programa, siga estes passos:
-
-1. Instale o Inno Setup em seu sistema:
-   - Baixe do site oficial: https://jrsoftware.org/isdl.php
-   - Execute o instalador do Inno Setup
-   - **Importante**: Certifique-se de que o diretório de instalação do Inno Setup está no PATH do sistema
-
-2. Gere o executável e o instalador com um único comando:
-```bash
-npm run dist
+### Formato Detalhado (com --detailed)
+```json
+{
+  "type": "directory",
+  "name": "project",
+  "children": [
+    {
+      "type": "file",
+      "name": "README.md",
+      "size": 2974,
+      "modified": "2024-02-27T09:05:00.000Z"
+    },
+    {
+      "type": "directory",
+      "name": "src",
+      "children": [
+        {
+          "type": "file",
+          "name": "index.js",
+          "size": 1234,
+          "modified": "2024-02-27T09:00:00.000Z"
+        }
+      ],
+      "modified": "2024-02-27T09:00:00.000Z"
+    }
+  ],
+  "modified": "2024-02-27T09:05:00.000Z"
+}
 ```
 
-Ou, se preferir fazer separadamente:
+## Arquivo .treeignore
+
+O arquivo `.treeignore` usa a mesma sintaxe do `.gitignore` para especificar quais arquivos e diretórios devem ser ignorados. Exemplo:
+
+```
+# Arquivos e pastas do Node.js
+node_modules/
+
+# Arquivos de build
+dist/
+
+# Arquivos do Git
+.git/
+
+# O próprio arquivo de saída
+tree-output.json
+```
+
+## Saindo do Programa
+
+Para finalizar o monitoramento, pressione a tecla 'q' ou use Ctrl+C.
+
+## Desenvolvimento
+
+### Compilando o Projeto
+
+Para compilar o projeto para diferentes plataformas:
+
 ```bash
-# Apenas compilar o executável
+# Compilar para todas as plataformas
 npm run build
 
-# Apenas gerar o instalador
-npm run make-installer
+# Ou compilar individualmente
+npm run build-win
+npm run build-linux
+npm run build-macos
 ```
 
-O instalador será gerado na pasta `dist` como `tree-monitor-setup.exe`
+### Contribuindo
+
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
 
 ## Licença
 

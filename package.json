@@ -1,36 +1,45 @@
 {
     "name": "tree-monitor",
     "version": "1.0.0",
-    "description": "Monitora recursivamente um diretório e gera sua estrutura em JSON",
+    "description": "Um monitor de diretórios que gera uma representação em formato de árvore da estrutura de arquivos",
     "main": "src/index.js",
     "bin": {
         "tree-monitor": "./src/index.js"
     },
     "scripts": {
         "start": "node src/index.js",
-        "build": "pkg .",
+        "build": "npm run build-win && npm run build-linux && npm run build-macos",
+        "build-win": "pkg . -t node18-win-x64 -o dist/tree-monitor-win.exe",
+        "build-linux": "pkg . -t node18-linux-x64 -o dist/tree-monitor-linux",
+        "build-macos": "pkg . -t node18-macos-x64 -o dist/tree-monitor-macos",
         "make-installer": "iscc installer/setup.iss",
         "dist": "npm run build && npm run make-installer"
     },
     "keywords": [
         "directory",
-        "tree",
         "monitor",
-        "json"
+        "tree",
+        "json",
+        "filesystem"
     ],
-    "author": "",
+    "author": "Bill Barsch",
     "license": "MIT",
     "dependencies": {
         "chokidar": "^3.5.3",
-        "ignore": "^5.2.4",
+        "ignore": "^5.3.1",
         "yargs": "^17.7.2"
     },
     "devDependencies": {
         "pkg": "^5.8.1"
     },
     "pkg": {
+        "assets": [
+            "src/**/*"
+        ],
         "targets": [
-            "node18-win-x64"
+            "node18-win-x64",
+            "node18-linux-x64",
+            "node18-macos-x64"
         ],
         "outputPath": "dist"
     }
