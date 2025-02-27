@@ -54,9 +54,9 @@ function loadIgnorePatterns(dir) {
 
 // Function to create simplified directory tree
 function createSimplifiedTree(detailedTree, ig) {
-    const result = {};
-
     function processNode(node, currentPath) {
+        const result = {};
+
         if (node.type === 'directory') {
             const relativePath = currentPath === '' ? '.' : currentPath;
 
@@ -71,16 +71,10 @@ function createSimplifiedTree(detailedTree, ig) {
                 .map(file => file.name)
                 .sort();
 
-            // Se for a raiz, adiciona os arquivos diretamente
-            if (relativePath === '.') {
-                files.forEach(file => {
-                    result[`"${file}"`] = null;
-                });
-            }
-            // Se não for a raiz e tiver arquivos, adiciona como subdiretório
-            else if (files.length > 0 && !ig.ignores(relativePath)) {
-                result[`"${path.basename(relativePath)}"`] = `{ ${files.map(f => `"${f}"`).join(', ')} }`;
-            }
+            // Adiciona os arquivos ao resultado
+            files.forEach(file => {
+                result[`"${file}"`] = null;
+            });
 
             // Processa os subdiretórios
             node.children
@@ -88,14 +82,23 @@ function createSimplifiedTree(detailedTree, ig) {
                 .forEach(child => {
                     const childPath = relativePath === '.' ? child.name : path.join(relativePath, child.name);
                     if (!ig.ignores(childPath)) {
-                        processNode(child, childPath);
+                        const subTree = processNode(child, childPath);
+                        if (Object.keys(subTree).length > 0) {
+                            const indentedEntries = Object.entries(subTree)
+                                .map(([key, value]) => value === null ?
+                                    `    ${key}` :
+                                    `    ${key}: ${value.split('\n').join('\n    ')}`)
+                                .join(',\n');
+                            result[`"${child.name}"`] = `{\n${indentedEntries}\n  }`;
+                        }
                     }
                 });
         }
+
+        return result;
     }
 
-    processNode(detailedTree, '');
-    return result;
+    return processNode(detailedTree, '');
 }
 
 // Function to get relative path safely
@@ -161,12 +164,12 @@ async function updateTreeFile() {
         if (argv.detailed) {
             await fs.promises.writeFile(absoluteOutputFile, JSON.stringify(finalTree, null, 2), 'utf8');
         } else {
-            // Formata a saída como uma árvore de arquivos
+            // Formata a saída como uma árvore de arquivos com indentação adequada
             const entries = Object.entries(finalTree)
-                .map(([key, value]) => value === null ? key : `${key}: ${value}`)
-                .join(',\n  ');
+                .map(([key, value]) => value === null ? `  ${key}` : `  ${key}: ${value}`)
+                .join(',\n');
 
-            const output = `{\n  ${entries}\n}`;
+            const output = `{\n${entries}\n}`;
             await fs.promises.writeFile(absoluteOutputFile, output, 'utf8');
         }
     } catch (err) {
