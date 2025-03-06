@@ -9,24 +9,26 @@ const { hideBin } = require('yargs/helpers');
 
 // Command line arguments configuration
 const argv = yargs(hideBin(process.argv))
-    .usage('Usage: $0 <interval> <directory> <output-file> [options]')
+    .usage('Usage: $0 [options]')
     .option('interval', {
         alias: 't',
-        describe: 'Update interval in seconds',
+        describe: 'Update interval in seconds (se fornecido, monitora continuamente)',
         type: 'number',
-        demandOption: true
+        demandOption: false
     })
     .option('directory', {
         alias: 'd',
         describe: 'Directory to monitor',
         type: 'string',
-        demandOption: true
+        default: '.',
+        demandOption: false
     })
     .option('output-file', {
         alias: 'o',
         describe: 'Output JSON file',
         type: 'string',
-        demandOption: true
+        default: 'tree-output.json',
+        demandOption: false
     })
     .option('detailed', {
         alias: 'D',
@@ -180,65 +182,75 @@ async function updateTreeFile() {
 // Load ignore patterns once
 const ig = loadIgnorePatterns(absoluteDirectory);
 
-// Configura o terminal para modo raw para capturar teclas
-process.stdin.setRawMode(true);
-process.stdin.resume();
-process.stdin.setEncoding('utf8');
-
-// Função para limpar e sair
-function cleanupAndExit() {
-    console.log('\nMonitoramento finalizado.');
-    process.exit(0);
-}
-
-// Monitora entrada do teclado
-process.stdin.on('data', function (key) {
-    // Ctrl+C ou q para sair
-    if (key === '\u0003' || key.toLowerCase() === 'q') {
-        cleanupAndExit();
-    }
-});
-
 // Show initial configuration message
 console.log(`
 Tree Monitor Configuration:
 -------------------------
 Directory: ${absoluteDirectory}
 Output File: ${absoluteOutputFile}
-Update Interval: ${argv.interval} seconds
+${argv.interval ? `Update Interval: ${argv.interval} seconds` : 'Modo: execução única'}
 Format: ${argv.detailed ? 'Detailed JSON' : 'Simplified tree'}
 .treeignore: ${fs.existsSync(path.join(absoluteDirectory, '.treeignore')) ? 'Found' : 'Not found'}
 -------------------------
-Pressione 'q' para finalizar o monitoramento
+${argv.interval ? 'Pressione \'q\' para finalizar o monitoramento' : ''}
 -------------------------
-Monitoring started...
+${argv.interval ? 'Monitoring started...' : 'Gerando arquivo...'}
 `);
 
-// Watcher configuration
-const watcher = chokidar.watch(absoluteDirectory, {
-    ignored: (filePath) => {
-        try {
-            if (filePath === absoluteDirectory) return false;
-            const relativePath = getRelativePath(filePath);
-            return relativePath !== '.' && ig.ignores(relativePath);
-        } catch (err) {
-            console.error('Error in ignore check:', err);
-            return false;
-        }
-    },
-    persistent: true,
-    ignoreInitial: false
+// Update file immediately
+updateTreeFile().then(() => {
+    // Se não tiver intervalo definido, finalizar após a primeira execução
+    if (!argv.interval) {
+        console.log('Arquivo gerado com sucesso!');
+        process.exit(0);
+    }
 });
 
-// Update file immediately and then at specified interval
-updateTreeFile();
-setInterval(updateTreeFile, argv.interval * 1000);
+// Configura o terminal para modo raw para capturar teclas apenas se estiver no modo contínuo
+if (argv.interval) {
+    process.stdin.setRawMode(true);
+    process.stdin.resume();
+    process.stdin.setEncoding('utf8');
 
-// Watcher events for real-time updates
-watcher
-    .on('add', updateTreeFile)
-    .on('unlink', updateTreeFile)
-    .on('addDir', updateTreeFile)
-    .on('unlinkDir', updateTreeFile)
-    .on('change', updateTreeFile)
-    .on('error', error => console.error('Watcher error:', error)); 
+    // Função para limpar e sair
+    function cleanupAndExit() {
+        console.log('\nMonitoramento finalizado.');
+        process.exit(0);
+    }
+
+    // Monitora entrada do teclado
+    process.stdin.on('data', function (key) {
+        // Ctrl+C ou q para sair
+        if (key === '\u0003' || key.toLowerCase() === 'q') {
+            cleanupAndExit();
+        }
+    });
+
+    // Watcher configuration
+    const watcher = chokidar.watch(absoluteDirectory, {
+        ignored: (filePath) => {
+            try {
+                if (filePath === absoluteDirectory) return false;
+                const relativePath = getRelativePath(filePath);
+                return relativePath !== '.' && ig.ignores(relativePath);
+            } catch (err) {
+                console.error('Error in ignore check:', err);
+                return false;
+            }
+        },
+        persistent: true,
+        ignoreInitial: false
+    });
+
+    // Configurar o intervalo de atualização
+    setInterval(updateTreeFile, argv.interval * 1000);
+
+    // Watcher events for real-time updates
+    watcher
+        .on('add', updateTreeFile)
+        .on('unlink', updateTreeFile)
+        .on('addDir', updateTreeFile)
+        .on('unlinkDir', updateTreeFile)
+        .on('change', updateTreeFile)
+        .on('error', error => console.error('Watcher error:', error));
+} 

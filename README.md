@@ -9,6 +9,7 @@ Um monitor de diretórios que gera uma representação em formato de árvore da 
 - Atualização automática em intervalos configuráveis
 - Dois formatos de saída: detalhado (JSON) e simplificado (árvore)
 - Saída fácil com a tecla 'q'
+- Valores padrão para facilitar o uso
 
 ## Download
 
@@ -47,26 +48,63 @@ npm run build
 ## Uso
 
 ```bash
+# Uso completo com todos os parâmetros
 tree-monitor --interval <segundos> --directory <diretório> --output-file <arquivo-saída> [--detailed]
+
+# Uso mais simples com valores padrão
+tree-monitor [--interval <segundos>] [--detailed]
 ```
 
 ### Parâmetros
 
-- `--interval, -t`: Intervalo de atualização em segundos
-- `--directory, -d`: Diretório a ser monitorado
-- `--output-file, -o`: Arquivo de saída
+- `--interval, -t`: Intervalo de atualização em segundos (opcional - se fornecido, ativa o modo de monitoramento contínuo)
+- `--directory, -d`: Diretório a ser monitorado (opcional - padrão: diretório atual)
+- `--output-file, -o`: Arquivo de saída (opcional - padrão: "tree-output.json")
 - `--detailed, -D`: Gera saída detalhada em formato JSON (opcional)
+
+### Modos de Operação
+
+O Tree Monitor possui dois modos de operação:
+
+1. **Modo de Execução Única**: Quando o parâmetro `--interval` não é fornecido, o programa executa uma única vez, gera o arquivo de saída e finaliza automaticamente.
+
+2. **Modo de Monitoramento Contínuo**: Quando o parâmetro `--interval` é fornecido, o programa monitora continuamente o diretório e atualiza o arquivo de saída no intervalo especificado. Neste modo, você pode pressionar a tecla 'q' para sair.
 
 ### Exemplos
 
-1. Monitoramento básico:
+1. Uso mínimo (execução única no diretório atual com saída em "tree-output.json"):
+```bash
+tree-monitor
+```
+
+2. Monitoramento contínuo no diretório atual com valores padrão:
+```bash
+tree-monitor --interval 30
+```
+
+3. Monitoramento contínuo básico:
 ```bash
 tree-monitor --interval 30 --directory "." --output-file "tree-output.json"
 ```
 
-2. Monitoramento com saída detalhada:
+4. Execução única em um diretório específico:
 ```bash
-tree-monitor --interval 30 --directory "." --output-file "tree-output.json" --detailed
+tree-monitor --directory "./meu-projeto"
+```
+
+5. Execução única com nome de arquivo personalizado:
+```bash
+tree-monitor --output-file "estrutura-projeto.json"
+```
+
+6. Execução única com saída detalhada:
+```bash
+tree-monitor --detailed
+```
+
+7. Monitoramento contínuo com saída detalhada:
+```bash
+tree-monitor --interval 30 --detailed
 ```
 
 ## Formatos de Saída
@@ -132,7 +170,8 @@ tree-output.json
 
 ## Saindo do Programa
 
-Para finalizar o monitoramento, pressione a tecla 'q' ou use Ctrl+C.
+No modo de monitoramento contínuo, para finalizar o monitoramento, pressione a tecla 'q' ou use Ctrl+C.
+No modo de execução única, o programa finaliza automaticamente após gerar o arquivo de saída.
 
 ## Desenvolvimento
 

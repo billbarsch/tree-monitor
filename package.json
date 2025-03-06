@@ -1,6 +1,6 @@
 {
     "name": "tree-monitor",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Um monitor de diretórios que gera uma representação em formato de árvore da estrutura de arquivos",
     "main": "src/index.js",
     "bin": {
